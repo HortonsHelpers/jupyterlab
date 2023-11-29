@@ -71,8 +71,6 @@ def list_get(xs, i):
 
 R = _R(0)
 src = Extendlist()
-regexp = {}
-
 # The following Regular Expressions can be used for tokenizing,
 # validating, and parsing SemVer version strings.
 
@@ -98,8 +96,7 @@ src[NONNUMERICIDENTIFIER] = "\\d*[a-zA-Z-][a-zA-Z0-9-]*"
 
 MAINVERSION = R()
 src[MAINVERSION] = (
-    "("
-    + src[NUMERICIDENTIFIER]
+    f"({src[NUMERICIDENTIFIER]}"
     + ")\\."
     + "("
     + src[NUMERICIDENTIFIER]
@@ -111,8 +108,7 @@ src[MAINVERSION] = (
 
 MAINVERSIONLOOSE = R()
 src[MAINVERSIONLOOSE] = (
-    "("
-    + src[NUMERICIDENTIFIERLOOSE]
+    f"({src[NUMERICIDENTIFIERLOOSE]}"
     + ")\\."
     + "("
     + src[NUMERICIDENTIFIERLOOSE]
@@ -127,12 +123,14 @@ src[MAINVERSIONLOOSE] = (
 # A numeric identifier, or a non-numeric identifier.
 
 PRERELEASEIDENTIFIER = R()
-src[PRERELEASEIDENTIFIER] = "(?:" + src[NUMERICIDENTIFIER] + "|" + src[NONNUMERICIDENTIFIER] + ")"
+src[
+    PRERELEASEIDENTIFIER
+] = f"(?:{src[NUMERICIDENTIFIER]}|{src[NONNUMERICIDENTIFIER]})"
 
 PRERELEASEIDENTIFIERLOOSE = R()
-src[PRERELEASEIDENTIFIERLOOSE] = (
-    "(?:" + src[NUMERICIDENTIFIERLOOSE] + "|" + src[NONNUMERICIDENTIFIER] + ")"
-)
+src[
+    PRERELEASEIDENTIFIERLOOSE
+] = f"(?:{src[NUMERICIDENTIFIERLOOSE]}|{src[NONNUMERICIDENTIFIER]})"
 
 
 # ## Pre-release Version
@@ -141,12 +139,18 @@ src[PRERELEASEIDENTIFIERLOOSE] = (
 
 PRERELEASE = R()
 src[PRERELEASE] = (
-    "(?:-(" + src[PRERELEASEIDENTIFIER] + "(?:\\." + src[PRERELEASEIDENTIFIER] + ")*))"
+    f"(?:-({src[PRERELEASEIDENTIFIER]}"
+    + "(?:\\."
+    + src[PRERELEASEIDENTIFIER]
+    + ")*))"
 )
 
 PRERELEASELOOSE = R()
 src[PRERELEASELOOSE] = (
-    "(?:-?(" + src[PRERELEASEIDENTIFIERLOOSE] + "(?:\\." + src[PRERELEASEIDENTIFIERLOOSE] + ")*))"
+    f"(?:-?({src[PRERELEASEIDENTIFIERLOOSE]}"
+    + "(?:\\."
+    + src[PRERELEASEIDENTIFIERLOOSE]
+    + ")*))"
 )
 
 # ## Build Metadata Identifier
@@ -172,9 +176,9 @@ src[BUILD] = "(?:\\+(" + src[BUILDIDENTIFIER] + "(?:\\." + src[BUILDIDENTIFIER] 
 #  comparison.
 
 FULL = R()
-FULLPLAIN = "v?" + src[MAINVERSION] + src[PRERELEASE] + "?" + src[BUILD] + "?"
+FULLPLAIN = f"v?{src[MAINVERSION]}{src[PRERELEASE]}?{src[BUILD]}?"
 
-src[FULL] = "^" + FULLPLAIN + "$"
+src[FULL] = f"^{FULLPLAIN}$"
 
 #  like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
 #  also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
@@ -182,7 +186,7 @@ src[FULL] = "^" + FULLPLAIN + "$"
 LOOSEPLAIN = "[v=\\s]*" + src[MAINVERSIONLOOSE] + src[PRERELEASELOOSE] + "?" + src[BUILD] + "?"
 
 LOOSE = R()
-src[LOOSE] = "^" + LOOSEPLAIN + "$"
+src[LOOSE] = f"^{LOOSEPLAIN}$"
 
 GTLT = R()
 src[GTLT] = "((?:<|>)?=?)"
@@ -234,9 +238,9 @@ src[XRANGEPLAINLOOSE] = (
 )
 
 XRANGE = R()
-src[XRANGE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAIN] + "$"
+src[XRANGE] = f"^{src[GTLT]}" + "\\s*" + src[XRANGEPLAIN] + "$"
 XRANGELOOSE = R()
-src[XRANGELOOSE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAINLOOSE] + "$"
+src[XRANGELOOSE] = f"^{src[GTLT]}" + "\\s*" + src[XRANGEPLAINLOOSE] + "$"
 
 #  Tilde ranges.
 #  Meaning is "reasonably at or greater than"
@@ -245,13 +249,13 @@ src[LONETILDE] = "(?:~>?)"
 
 TILDETRIM = R()
 src[TILDETRIM] = "(\\s*)" + src[LONETILDE] + "\\s+"
-regexp[TILDETRIM] = re.compile(src[TILDETRIM], re.M)
+regexp = {TILDETRIM: re.compile(src[TILDETRIM], re.M)}
 tildeTrimReplace = r"\1~"
 
 TILDE = R()
-src[TILDE] = "^" + src[LONETILDE] + src[XRANGEPLAIN] + "$"
+src[TILDE] = f"^{src[LONETILDE]}{src[XRANGEPLAIN]}$"
 TILDELOOSE = R()
-src[TILDELOOSE] = "^" + src[LONETILDE] + src[XRANGEPLAINLOOSE] + "$"
+src[TILDELOOSE] = f"^{src[LONETILDE]}{src[XRANGEPLAINLOOSE]}$"
 
 #  Caret ranges.
 #  Meaning is "at least and backwards compatible with"
@@ -264,15 +268,15 @@ regexp[CARETTRIM] = re.compile(src[CARETTRIM], re.M)
 caretTrimReplace = r"\1^"
 
 CARET = R()
-src[CARET] = "^" + src[LONECARET] + src[XRANGEPLAIN] + "$"
+src[CARET] = f"^{src[LONECARET]}{src[XRANGEPLAIN]}$"
 CARETLOOSE = R()
-src[CARETLOOSE] = "^" + src[LONECARET] + src[XRANGEPLAINLOOSE] + "$"
+src[CARETLOOSE] = f"^{src[LONECARET]}{src[XRANGEPLAINLOOSE]}$"
 
 #  A simple gt/lt/eq thing, or just "" to indicate "any version"
 COMPARATORLOOSE = R()
-src[COMPARATORLOOSE] = "^" + src[GTLT] + "\\s*(" + LOOSEPLAIN + ")$|^$"
+src[COMPARATORLOOSE] = f"^{src[GTLT]}" + "\\s*(" + LOOSEPLAIN + ")$|^$"
 COMPARATOR = R()
-src[COMPARATOR] = "^" + src[GTLT] + "\\s*(" + FULLPLAIN + ")$|^$"
+src[COMPARATOR] = f"^{src[GTLT]}" + "\\s*(" + FULLPLAIN + ")$|^$"
 
 
 #  An expression to strip any whitespace between the gtlt and the thing
@@ -326,27 +330,16 @@ for i in range(R.value()):
 
 def parse(version, loose):
     r = regexp[LOOSE] if loose else regexp[FULL]
-    m = r.search(version)
-    if m:
-        return semver(version, loose)
-    else:
-        return None
+    return semver(version, loose) if (m := r.search(version)) else None
 
 
 def valid(version, loose):
     v = parse(version, loose)
-    if v.version:
-        return v
-    else:
-        return None
+    return v if v.version else None
 
 
 def clean(version, loose):
-    s = parse(version, loose)
-    if s:
-        return s.version
-    else:
-        return None
+    return s.version if (s := parse(version, loose)) else None
 
 
 NUMERIC = re.compile(r"^\d+$")

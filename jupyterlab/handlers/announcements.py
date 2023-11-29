@@ -106,14 +106,13 @@ class CheckForUpdate(CheckForUpdateABC):
             self.logger.debug("Failed to get latest version", exc_info=e)
             return None
         else:
-            if parse(self.version) < parse(last_version):
-                trans = translator.load("jupyterlab")
-                return (
-                    trans.__(f"A newer version ({last_version}) of JupyterLab is available."),
-                    (trans.__("Open changelog"), f"{JUPYTERLAB_RELEASE_URL}{last_version}"),
-                )
-            else:
+            if parse(self.version) >= parse(last_version):
                 return None
+            trans = translator.load("jupyterlab")
+            return (
+                trans.__(f"A newer version ({last_version}) of JupyterLab is available."),
+                (trans.__("Open changelog"), f"{JUPYTERLAB_RELEASE_URL}{last_version}"),
+            )
 
 
 class NeverCheckForUpdate(CheckForUpdateABC):

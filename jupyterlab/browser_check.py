@@ -134,7 +134,7 @@ async def run_async_process(cmd, **kwargs):
     proc = await asyncio.create_subprocess_exec(*cmd, **kwargs)
     stdout, stderr = await proc.communicate()
     if proc.returncode != 0:
-        raise RuntimeError(str(cmd) + " exited with " + str(proc.returncode))
+        raise RuntimeError(f"{str(cmd)} exited with {str(proc.returncode)}")
     return stdout, stderr
 
 

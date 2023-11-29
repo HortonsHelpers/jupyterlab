@@ -13,7 +13,9 @@ lab_ext_name = "test_no_hyphens"
 HERE = path.abspath(path.dirname(__file__))
 lab_path = path.join(HERE, module_name, "labextension")
 
-data_files_spec = [("share/jupyter/labextensions/" + lab_ext_name, lab_path, "**")]
+data_files_spec = [
+    (f"share/jupyter/labextensions/{lab_ext_name}", lab_path, "**")
+]
 
 setup_args = {"name": name, "version": version, "packages": [module_name]}
 

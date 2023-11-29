@@ -57,7 +57,7 @@ def main():
 
         mod._jupyter_server_extension_points = _jupyter_server_extension_points
 
-    App.__name__ = example_dir.name.capitalize() + "Test"
+    App.__name__ = f"{example_dir.name.capitalize()}Test"
     App.launch_instance()
 
 

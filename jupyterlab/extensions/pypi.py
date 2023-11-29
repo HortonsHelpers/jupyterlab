@@ -34,7 +34,7 @@ from jupyterlab.extensions.manager import (
 async def _fetch_package_metadata(name: str, latest_version: str, base_url: str) -> dict:
     http_client = tornado.httpclient.AsyncHTTPClient()
     response = await http_client.fetch(
-        base_url + f"/{name}/{latest_version}/json",
+        f"{base_url}/{name}/{latest_version}/json",
         headers={"Content-Type": "application/json"},
     )
     data = json.loads(response.body).get("info")
@@ -111,7 +111,7 @@ class PyPIExtensionManager(ExtensionManager):
         try:
             http_client = tornado.httpclient.AsyncHTTPClient()
             response = await http_client.fetch(
-                self.base_url + f"/{pkg}/json",
+                f"{self.base_url}/{pkg}/json",
                 headers={"Content-Type": "application/json"},
             )
             data = json.loads(response.body).get("info")
@@ -139,7 +139,7 @@ class PyPIExtensionManager(ExtensionManager):
                 return self._normalize_name(install_metadata["packageName"])
         return self._normalize_name(extension.name)
 
-    async def __throttleRequest(self, recursive: bool, fn: Callable, *args) -> Any:  # noqa
+    async def __throttleRequest(self, recursive: bool, fn: Callable, *args) -> Any:    # noqa
         """Throttle XMLRPC API request
 
         Args:
@@ -158,10 +158,8 @@ class PyPIExtensionManager(ExtensionManager):
             if err.faultCode == -32500 and err.faultString.startswith(  # noqa PLR2004
                 "HTTPTooManyRequests:"
             ):
-                delay = 1.01
                 match = re.search(r"Limit may reset in (\d+) seconds.", err.faultString)
-                if match is not None:
-                    delay = int(match.group(1) or "1")
+                delay = int(match.group(1) or "1") if match is not None else 1.01
                 self.log.info(
                     f"HTTPTooManyRequests - Perform next call to PyPI XMLRPC API in {delay}s."
                 )

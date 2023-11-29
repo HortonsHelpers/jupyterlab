@@ -111,15 +111,11 @@ def build_api_docs(out_dir: Path):
     root = docs.parent
     docs_api = docs / "source" / "api"
     api_index = docs_api / "index.html"
-    # is this an okay way to specify jlpm
-    # without installing jupyterlab first?
-    jlpm = ["node", str(root / "jupyterlab" / "staging" / "yarn.js")]
+    if not api_index.exists():
+        # is this an okay way to specify jlpm
+        # without installing jupyterlab first?
+        jlpm = ["node", str(root / "jupyterlab" / "staging" / "yarn.js")]
 
-    if api_index.exists():
-        # avoid rebuilding docs because it takes forever
-        # `make clean` to force a rebuild
-        pass
-    else:
         check_call(jlpm, cwd=str(root))  # noqa S603
         check_call([*jlpm, "build:packages"], cwd=str(root))  # noqa S603
         check_call([*jlpm, "docs"], cwd=str(root))  # noqa S603
@@ -205,10 +201,7 @@ def document_commands_list(temp_folder: Path) -> None:
 
     for command in sorted(commands_list, key=lambda c: c["id"]):
         for key in ("id", "label", "caption"):
-            if key not in command:
-                command[key] = ""
-            else:
-                command[key] = command[key].replace("\n", " ")
+            command[key] = "" if key not in command else command[key].replace("\n", " ")
         shortcuts = command.get("shortcuts", [])
         command["shortcuts"] = (
             "<kbd>" + "</kbd>, <kbd>".join(shortcuts) + "</kbd>" if len(shortcuts) else ""
@@ -223,11 +216,10 @@ def document_plugins_tokens_list(list_path: Path, output_path: Path) -> None:
     """Generate the plugins list documentation page from application extraction."""
     items = json.loads(list_path.read_text())
 
-    template = ""
-
-    for _name, _description in items.items():
-        template += f"- ``{_name}``: {_description}\n"
-
+    template = "".join(
+        f"- ``{_name}``: {_description}\n"
+        for _name, _description in items.items()
+    )
     output_path.write_text(template)
 
 

@@ -11,6 +11,9 @@ class Response(NamedTuple):
 
 
 def fake_client_factory():
+
+
+
     class FakeClient:
         """Fake AsyncHTTPClient
 
@@ -19,7 +22,8 @@ def fake_client_factory():
 
         body = b""
 
-        async def fetch(*args, **kwargs):
+        async def fetch(self, **kwargs):
             return Response(FakeClient.body)
+
 
     return FakeClient
